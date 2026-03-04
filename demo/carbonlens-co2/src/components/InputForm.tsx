@@ -24,7 +24,7 @@ export default function InputForm({
                     placeholder="https://example.com 或 169719"
                 />
                 <p style={{ fontSize: '0.9rem', color: '#718096', marginTop: '8px' }}>
-                    输入网址将自动估算传输大小（近似值）；手动输入字节数更精确（F12 → Network → 底部 Transferred 值）
+                    已切换为本地 Lighthouse 审计（更精确的真实传输大小）手动输入字节数更精确（F12 → Network → 底部 Transferred 值）
                 </p>
             </div>
 

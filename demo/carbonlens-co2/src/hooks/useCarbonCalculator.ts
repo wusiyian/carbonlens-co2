@@ -34,16 +34,20 @@ export const useCarbonCalculator = () => {
             }
         } else {
             try {
-                const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(input.trim())}`;
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('代理请求失败');
+                const apiUrl = `http://localhost:3001/api/audit?url=${encodeURIComponent(input.trim())}`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`后端返回 ${response.status}`);
 
-                const text = await response.text();
+                const data = await response.json();
 
-                // 更准确估算：加 2-3 倍（经验值，页面总传输通常 HTML 的 3-5 倍）
-                bytes = Math.round(new TextEncoder().encode(text).length * 3.5);
-            } catch (err) {
-                setError('无法获取网址大小，请手动输入 bytes 或检查 URL');
+                if (!data.success) {
+                    throw new Error(data.error || '审计失败');
+                }
+
+                bytes = data.bytes;
+                console.log(`Lighthouse 真实传输大小: ${bytes} bytes`);
+            } catch (err: any) {
+                setError(`Lighthouse 审计失败：${err.message}（请先运行 npm run server）`);
                 setLoading(false);
                 return;
             }
