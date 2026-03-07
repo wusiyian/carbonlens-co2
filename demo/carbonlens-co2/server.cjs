@@ -55,13 +55,14 @@ app.get('/api/audit', async (req, res) => {
         });
 
         const lh = runnerResult.lhr;
-
+        const items = lh.audits['resource-summary']?.details?.items || [];
         let bytes = lh.audits['total-byte-weight']?.numericValue || 0;
 
         if (bytes === 0 || bytes < 10000) {
-            const items = lh.audits['resource-summary']?.details?.items || [];
             bytes = items.reduce((sum, item) => sum + (item.transferSize || 0), 0);
         }
+
+        const hasImages = items.some(item => item.resourceType === 'image' && item.transferSize > 0);
 
         await chrome.kill();
 
@@ -85,7 +86,8 @@ app.get('/api/audit', async (req, res) => {
             success: true,
             bytes: Math.round(bytes),
             url: url,
-            performanceScore: Math.round(lh.categories.performance.score * 100)
+            performanceScore: Math.round(lh.categories.performance.score * 100),
+            hasImages
         });
     } catch (err) {
         console.error(err);

@@ -10,6 +10,15 @@ export interface CalculationResult {
     isGreenHosting: string;
     modelUsed: string;
     displayInfo: string;
+    optimizationSuggestions: Array<{
+        id: string;
+        title: string;
+        description: string;
+        estimatedSavings: string;
+        codeSnippet: string;
+        priority: number;
+    }>;
+    hasImages: boolean;
 }
 
 export const useCarbonCalculator = () => {
@@ -23,8 +32,7 @@ export const useCarbonCalculator = () => {
         setResult(null);
 
         let bytes: number;
-
-
+        let hasImages = false;
         if (/^\d+$/.test(input.trim())) {
             bytes = parseInt(input.trim(), 10);
             if (isNaN(bytes) || bytes <= 0) {
@@ -46,6 +54,7 @@ export const useCarbonCalculator = () => {
 
                 bytes = data.bytes;
                 console.log(`Lighthouse 真实传输大小: ${bytes} bytes`);
+                hasImages = data.hasImages || false;
             } catch (err: any) {
                 setError(`Lighthouse 审计失败：${err.message}（请先运行 npm run server）`);
                 setLoading(false);
@@ -91,6 +100,55 @@ export const useCarbonCalculator = () => {
             const avgGrams = 0.8;
             const cleanerThan = Math.max(0, Math.min(100, Math.round(100 - (gramsCO2e / avgGrams) * 100)));
 
+            const optimizationSuggestions = [];
+
+            // 根据 bytes 和 gramsCO2e 生成动态建议
+            if (hasImages && bytes > 1500000) {  // > 1.5MB
+                optimizationSuggestions.push({
+                    id: 'lazy-loading',
+                    title: '启用图片懒加载',
+                    description: '延迟加载屏幕外图片，减少首次传输量',
+                    estimatedSavings: Math.min(0.15, gramsCO2e * 0.3).toFixed(3),  // 估算节省 30%
+                    codeSnippet: `<img src="..." alt="..." loading="lazy" width="..." height="..." />`,
+                    priority: 1
+                });
+            }
+
+            if (hasImages && bytes > 800000) {  // > 800KB 且有图片需求
+                optimizationSuggestions.push({
+                    id: 'webp-conversion',
+                    title: '图片转换为 WebP 格式',
+                    description: 'WebP 压缩率高 25–35%，显著降低图片体积',
+                    estimatedSavings: Math.min(0.3, gramsCO2e * 0.4).toFixed(3),
+                    codeSnippet: `<picture><source srcset="..." type="image/webp" /><img src="..." /></picture>`,
+                    priority: 2
+                });
+            }
+
+            if (bytes > 500000) {  // > 500KB JS 可能多
+                optimizationSuggestions.push({
+                    id: 'code-splitting',
+                    title: '启用代码分割（React.lazy）',
+                    description: '延迟加载非首屏组件，减少首屏 JS 体积',
+                    estimatedSavings: Math.min(0.2, gramsCO2e * 0.25).toFixed(3),
+                    codeSnippet: `const Component = React.lazy(() => import('./Component'));\n<Suspense fallback={<div>加载中...</div>}><Component /></Suspense>`,
+                    priority: 3
+                });
+            }
+
+            // 总是加碳感知暗模式（设备端节省）
+            optimizationSuggestions.push({
+                id: 'carbon-dark-mode',
+                title: '碳感知暗模式',
+                description: '高碳电网或低电量时自动切换深色主题，节省显示能耗',
+                estimatedSavings: Math.min(0.12, gramsCO2e * 0.15).toFixed(3),
+                codeSnippet: `@media (prefers-color-scheme: dark) and (prefers-reduced-data: reduce) { body { background: #121212; color: #e0e0e0; } }`,
+                priority: 4
+            });
+
+            // 按优先级排序
+            optimizationSuggestions.sort((a, b) => a.priority - b.priority);
+
             setResult({
                 url: input.trim(),
                 bytes: bytes.toLocaleString(),
@@ -100,6 +158,8 @@ export const useCarbonCalculator = () => {
                 isGreenHosting: isGreenHosting ? '是' : '否（默认）',
                 modelUsed: 'Sustainable Web Design v4',
                 displayInfo,
+                optimizationSuggestions,
+                hasImages,
             });
         } catch (err: any) {
             setError(`计算失败：${err.message || '未知错误'}`);

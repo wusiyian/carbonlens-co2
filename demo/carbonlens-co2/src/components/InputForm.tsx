@@ -13,6 +13,12 @@ export default function InputForm({
     onCalculate,
     loading,
 }: InputFormProps) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !loading) {  // 按回车且不在加载中
+            e.preventDefault();  // 防止表单默认提交行为
+            onCalculate();
+        }
+    };
     return (
         <div className="input-card">
             <div className="form-group">
@@ -21,6 +27,7 @@ export default function InputForm({
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="https://example.com 或 169719"
                 />
                 <p style={{ fontSize: '0.9rem', color: '#718096', marginTop: '8px' }}>
