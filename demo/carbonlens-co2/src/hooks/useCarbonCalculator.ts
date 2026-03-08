@@ -1,29 +1,7 @@
 import { useState } from 'react';
-import { co2, hosting } from '@tgwf/co2';
+import { co2 } from '@tgwf/co2';
+import type { CalculationResult, OptimizationSuggestion } from '@/types';
 
-
-export interface CalculationResult {
-    url: string;
-    bytes: string;
-    gramsCO2e: string;
-    cleanerThan: string;
-    rating: string;
-    isGreenHosting: string;
-    modelUsed: string;
-    displayInfo: string;
-    optimizationSuggestions: Array<{
-        id: string;
-        title: string;
-        description: string;
-        estimatedSavings: string;
-        codeSnippet: string;
-        priority: number;
-    }>;
-    hasImages: boolean;
-    hasFonts: boolean;
-    hasCSS: boolean;
-    // hasBlockingJS: boolean;
-}
 
 export const useCarbonCalculator = () => {
     const [loading, setLoading] = useState(false);
