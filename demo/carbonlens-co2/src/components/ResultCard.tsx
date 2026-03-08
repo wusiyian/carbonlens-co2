@@ -152,6 +152,17 @@ export default function ResultCard({ result }: ResultCardProps) {
                     </div>
                 )}
             </div>
+
+            <div className="result-item">
+                <span className="result-label">绿色托管：</span>
+                <span className="result-value">{result.isGreenHosting}</span>
+            </div>
+
+            {result.isGreenHosting.includes('否') && (
+                <p style={{ fontSize: '0.85rem', color: '#718096', marginTop: '8px', textAlign: 'center' }}>
+                    数据来自 The Green Web Foundation API，可能存在更新延迟。部分平台（如 Vercel）官方宣称 100% 绿电，但数据库标记可能滞后。
+                </p>
+            )}
         </div>
     );
 }

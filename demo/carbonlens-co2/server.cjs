@@ -56,6 +56,7 @@ app.get('/api/audit', async (req, res) => {
 
         const lh = runnerResult.lhr;
         const items = lh.audits['resource-summary']?.details?.items || [];
+
         let bytes = lh.audits['total-byte-weight']?.numericValue || 0;
 
         if (bytes === 0 || bytes < 10000) {
@@ -63,11 +64,13 @@ app.get('/api/audit', async (req, res) => {
         }
 
         const hasImages = items.some(item => item.resourceType === 'image' && item.transferSize > 0);
+        const hasFonts = items.some(item => item.resourceType === 'font' && item.transferSize > 0);
+        const hasCSS = items.some(item => item.resourceType === 'stylesheet' && item.transferSize > 0);
+        // const hasBlockingJS = lh.audits['render-blocking-resources']?.numericValue > 0;  // 检测阻塞 JS
 
         await chrome.kill();
 
         await new Promise(resolve => setTimeout(resolve, 2000));
-
 
         try {
             const files = fs.readdirSync(tempDir);
@@ -87,7 +90,10 @@ app.get('/api/audit', async (req, res) => {
             bytes: Math.round(bytes),
             url: url,
             performanceScore: Math.round(lh.categories.performance.score * 100),
-            hasImages
+            hasImages,
+            hasFonts,
+            hasCSS,
+            // hasBlockingJS
         });
     } catch (err) {
         console.error(err);
