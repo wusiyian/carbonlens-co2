@@ -29,3 +29,23 @@ export interface CalculationResult {
     hasCSS: boolean;
     // hasBlockingJS: boolean;  // 已注释删除，如果你以后恢复可取消注释
 }
+
+/**
+ * 优化前后对比数据
+ */
+export interface OptimizationComparison {
+    original: {
+        gramsCO2e: number;
+        rating: string;
+        cleanerThan: string;
+    };
+    optimized: {
+        gramsCO2e: number;
+        rating: string;
+        cleanerThan: string;
+    };
+    savings: {
+        grams: number;
+        percent: number;
+    };
+}

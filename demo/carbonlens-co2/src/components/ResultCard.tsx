@@ -1,7 +1,9 @@
 //输出卡片
 import { useState } from 'react';
-import type { CalculationResult } from '../hooks/useCarbonCalculator';
+import type { CalculationResult } from '@/types';
 import toast from 'react-hot-toast';
+import Dashboard from '@/components/Dashboard';
+import { compareOptimization } from '@/utils/compareOptimization';
 
 interface ResultCardProps {
     result: CalculationResult;
@@ -19,11 +21,17 @@ const getRatingClass = (rating: string) => {
 
 export default function ResultCard({ result }: ResultCardProps) {
     const [showOptimization, setShowOptimization] = useState(false);
+    const [comparison, setComparison] = useState<ReturnType<typeof compareOptimization> | undefined>(undefined);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text)
             .then(() => toast.success('代码已复制到剪贴板！'))
             .catch(() => toast.error('复制失败，请手动复制'));
+    };
+
+    const handleGenerateComparison = () => {
+        const newComparison = compareOptimization(result);
+        setComparison(newComparison);
     };
 
     return (
@@ -51,6 +59,11 @@ export default function ResultCard({ result }: ResultCardProps) {
             </div>
 
             <div className="result-item">
+                <span className="result-label">比平均网页更清洁：</span>
+                <span className="result-value">{result.cleanerThan}</span>
+            </div>
+
+            <div className="result-item">
                 <span className="result-label">评级：</span>
                 <span className={`rating-badge ${getRatingClass(result.rating)}`}>
                     {result.rating}
@@ -61,6 +74,12 @@ export default function ResultCard({ result }: ResultCardProps) {
                 <span className="result-label">绿色托管：</span>
                 <span className="result-value">{result.isGreenHosting}</span>
             </div>
+
+            {result.isGreenHosting.includes('否') && (
+                <p style={{ fontSize: '0.85rem', color: '#718096', marginTop: '8px', textAlign: 'center' }}>
+                    数据来自 The Green Web Foundation API，可能存在更新延迟。部分平台（如 Vercel）官方宣称 100% 绿电，但数据库标记可能滞后。
+                </p>
+            )}
 
             <div className="result-item">
                 <span className="result-label">计算模型：</span>
@@ -153,15 +172,27 @@ export default function ResultCard({ result }: ResultCardProps) {
                 )}
             </div>
 
-            <div className="result-item">
-                <span className="result-label">绿色托管：</span>
-                <span className="result-value">{result.isGreenHosting}</span>
-            </div>
+            {/* 新增：对比按钮 */}
+            <button
+                onClick={handleGenerateComparison}
+                style={{
+                    marginTop: '24px',
+                    width: '100%',
+                    padding: '12px',
+                    background: '#3182ce',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                }}
+            >
+                生成优化前后对比
+            </button>
 
-            {result.isGreenHosting.includes('否') && (
-                <p style={{ fontSize: '0.85rem', color: '#718096', marginTop: '8px', textAlign: 'center' }}>
-                    数据来自 The Green Web Foundation API，可能存在更新延迟。部分平台（如 Vercel）官方宣称 100% 绿电，但数据库标记可能滞后。
-                </p>
+            {/* 对比仪表盘 */}
+            {comparison && (
+                <Dashboard result={result} comparison={comparison} />
             )}
         </div>
     );
