@@ -4,6 +4,8 @@ import type { CalculationResult } from '@/types';
 import toast from 'react-hot-toast';
 import Dashboard from '@/components/Dashboard';
 import { compareOptimization } from '@/utils/compareOptimization';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFReport } from '@/components/PDFReport';
 
 interface ResultCardProps {
     result: CalculationResult;
@@ -176,15 +178,16 @@ export default function ResultCard({ result }: ResultCardProps) {
             <button
                 onClick={handleGenerateComparison}
                 style={{
-                    marginTop: '24px',
                     width: '100%',
-                    padding: '12px',
-                    background: '#3182ce',
+                    padding: '12px 0',
+                    background: '#2f855a',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: '1.1rem',
+                    fontWeight: 'bold',
                     cursor: 'pointer',
+                    transition: 'background 0.2s'
                 }}
             >
                 生成优化前后对比
@@ -194,6 +197,35 @@ export default function ResultCard({ result }: ResultCardProps) {
             {comparison && (
                 <Dashboard result={result} comparison={comparison} />
             )}
+
+            <button
+                style={{
+                    width: '100%',
+                    padding: '12px 0',
+                    background: '#2f855a',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                }}
+            >
+                <PDFDownloadLink
+                    document={<PDFReport result={result} comparison={comparison} />}
+                    fileName={`绿色审计报告_${result.url.replace(/\./g, '_')}.pdf`}
+                    style={{
+                        color: 'white',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                    }}
+                >
+                    {({ blob, url, loading, error }) =>
+                        loading ? '正在生成 PDF...' : '导出 PDF 绿色审计报告'
+                    }
+                </PDFDownloadLink>
+            </button>
         </div>
     );
 }

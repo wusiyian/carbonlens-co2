@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
     "@tgwf/co2": "^0.18.0",
     "chart.js": "^4.5.1",
     "chrome-launcher": "^1.2.1",
